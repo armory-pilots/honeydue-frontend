@@ -13,9 +13,9 @@ function classNames(...classes) {
 }
 
 export default function App() {
-
+  const API_URL = `${process.env.REACT_APP_API_URL}/api/v1/chores`;
   const fetchChores = useCallback(async () => {
-    const result = await axios.get("http://localhost:8080/api/v1/chores", {
+    const result = await axios.get(API_URL, {
       headers: {
         authorization:
           "eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJob25leWR1ZSIsInN1YiI6ImplZGlrbmlnaHQiLCJuYW1lIjoibHVrZSBza3l3YWxrZXIiLCJzY29wZSI6InVzZXJzIiwiaWF0IjoxNjIxMjk1NjEyLCJleHAiOjE2MjEzMjQ0MTJ9.UE_ktLk8_hdI2DlNQrG-Xmmg2mmmOIZII8SUROo1HgQ",
@@ -23,11 +23,11 @@ export default function App() {
     });
     const backendChores = result.data
     setChores(backendChores);
-  }, []);
+  }, [API_URL]);
 
   async function addChore() {
     const result = await axios.post(
-      "http://localhost:8080/api/v1/chores",
+      API_URL,
       choreData,
       {
         headers: {
