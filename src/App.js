@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useState } from "react";
+import { Fragment, useRef, useEffect, useState } from "react";
 import { Disclosure, Menu, Transition, Switch } from "@headlessui/react";
 import { BellIcon, MenuIcon, XIcon } from "@heroicons/react/outline";
 import axios from "axios";
@@ -14,7 +14,8 @@ function classNames(...classes) {
 
 export default function App() {
   const API_URL = `${process.env.REACT_APP_API_URL}/api/v1/chores`;
-  const fetchChores = useCallback(async () => {
+  // const API_URL = `http://localhost:8080/api/v1/chores`;
+  const fetchChores = async () => {
     const result = await axios.get(API_URL, {
       headers: {
         authorization:
@@ -22,8 +23,10 @@ export default function App() {
       },
     });
     const backendChores = result.data
-    setChores(backendChores);
-  }, [API_URL]);
+    if (mounted.current) {
+      setChores(backendChores);
+    }
+  };
 
   async function addChore() {
     const result = await axios.post(
@@ -49,6 +52,9 @@ export default function App() {
   const [enabled, setEnabled] = useState(false);
   const [chores, setChores] = useState([]);
   const [choreData, updateChoreData] = useState(initialChoreData);
+  const [alert, setAlert] = useState(false)
+  let mounted = useRef(true)
+  
 
   const handleChange = (e) => {
     updateChoreData({
@@ -64,13 +70,32 @@ export default function App() {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log(choreData);
-    addChore();
-    updateChoreData(initialChoreData);
+    addChore().then(() => {
+      if (mounted.current) {
+        updateChoreData(initialChoreData);
+        setAlert(true);
+      }
+    });
   };
 
   useEffect(() => {
+    mounted.current = true
+    if (chores.length && !alert) {
+      return
+    }
     fetchChores()
-  }, [chores, fetchChores])
+    return () => mounted.current = false
+  }, [alert, chores])
+
+  useEffect(() => {
+    if (alert) {
+      setTimeout(() => {
+        if (mounted.current) {
+          setAlert(false)
+        }
+      }, 1000)
+    }
+  }, [alert])
 
   return (
     <div className="min-h-screen bg-gray-100">
